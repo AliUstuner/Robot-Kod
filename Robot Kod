@@ -1,0 +1,36 @@
+from flask import Flask, render_template, request
+import pigpio
+
+app = Flask(__name__)
+pi = pigpio.pi()
+
+MOTOR1 = 17
+MOTOR2 = 18
+
+def set_motor(speed1, speed2):
+    pwm1 = int(1500 + speed1 * 250)
+    pwm2 = int(1500 + speed2 * 250)
+    pi.set_servo_pulsewidth(MOTOR1, pwm1)
+    pi.set_servo_pulsewidth(MOTOR2, pwm2)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/move', methods=['POST'])
+def move():
+    direction = request.form['direction']
+    if direction == 'forward':
+        set_motor(1, 1)
+    elif direction == 'backward':
+        set_motor(-1, -1)
+    elif direction == 'left':
+        set_motor(-1, 1)
+    elif direction == 'right':
+        set_motor(1, -1)
+    elif direction == 'stop':
+        set_motor(0, 0)
+    return ('', 204)
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
